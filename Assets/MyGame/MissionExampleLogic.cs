@@ -113,7 +113,6 @@ public class MissionExampleLogic : MissionBaseLogic
         squad1.Bots.AddRange(Controller.SpawnSquad(enemyType4, 1, 0, cover4).Bots);
         squad1.Bots.AddRange(Controller.SpawnSquad(enemyType5, 1, 0, cover5).Bots);
         squad1.Bots.AddRange(Controller.SpawnSquad(enemyType6, 1, 0, cover6).Bots);
-        Debug.Log(squad1.Bots);
         return squad1;
     }
 
