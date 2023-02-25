@@ -98,17 +98,17 @@ public class MissionExampleLogic : MissionBaseLogic
             new SetupForEnemyRespawn("Gunner", "cover2"),
             new SetupForEnemyRespawn("Soldier", "cover3"),
             new SetupForEnemyRespawn("Soldier", "cover4"),
-            new SetupForEnemyRespawn("Soldier", "cover5"),
+            new SetupForEnemyRespawn("Sniper", "cover5"),
             new SetupForEnemyRespawn("Sniper", "cover6"),
         };
 
         wave2 = new List<SetupForEnemyRespawn>()
         {
             new SetupForEnemyRespawn("Gunner", "cover2-1"),
-            new SetupForEnemyRespawn("Gunner", "cover2-2"),
-            new SetupForEnemyRespawn("Soldier", "cover2-3"),
+            new SetupForEnemyRespawn("Soldier", "cover2-2"),
+            new SetupForEnemyRespawn("Gunner", "cover2-3"),
             new SetupForEnemyRespawn("Soldier", "cover2-4"),
-            new SetupForEnemyRespawn("Soldier", "cover2-5"),
+            new SetupForEnemyRespawn("Sniper", "cover2-5"),
             new SetupForEnemyRespawn("Sniper", "cover2-6"),
         };
         wave3 = new List<SetupForEnemyRespawn>()
@@ -185,7 +185,7 @@ public class MissionExampleLogic : MissionBaseLogic
             new SetupForEnemyRespawn("Gunner", "cover11-2"),
             new SetupForEnemyRespawn("Soldier", "cover11-3"),
             new SetupForEnemyRespawn("Soldier", "cover11-4"),
-            new SetupForEnemyRespawn("Soldier", "cover11-5"),
+            new SetupForEnemyRespawn("Sniper", "cover11-5"),
             new SetupForEnemyRespawn("Sniper", "cover11-6"),
         };
         wave12 = new List<SetupForEnemyRespawn>()
@@ -193,7 +193,7 @@ public class MissionExampleLogic : MissionBaseLogic
             new SetupForEnemyRespawn("Gunner", "cover12-1"),
             new SetupForEnemyRespawn("Gunner", "cover12-2"),
             new SetupForEnemyRespawn("Soldier", "cover12-3"),
-            new SetupForEnemyRespawn("Soldier", "cover12-4"),
+            new SetupForEnemyRespawn("Sniper", "cover12-4"),
             new SetupForEnemyRespawn("Sniper", "cover12-5"),
             new SetupForEnemyRespawn("Sniper", "cover12-6"),
         };
@@ -222,7 +222,8 @@ public class MissionExampleLogic : MissionBaseLogic
     {
         Controller.DestroyObject(car);
     }
-    
+
+    //------Buttons-------
     void Button1OnPressed()
     {
         if (wave1isKilled && wave2isKilled && wave3isKilled)
@@ -301,7 +302,9 @@ public class MissionExampleLogic : MissionBaseLogic
             Debug.Log("Область ещё недостаточно зачищена для успешной эвакуации");
         }
     }
+    //------Buttons-------
 
+    //------Triggers-------
     void OnTrigger1Enter ()
     {
         var currentWave1 = SpawnSquadWave(wave1);
@@ -320,10 +323,12 @@ public class MissionExampleLogic : MissionBaseLogic
         var currentWave13 = SpawnSquadWave(wave13);
         currentWave13.WaveHaveTwoAliveEnemy += Wave13HaveTwoAliveEnemy;
         currentWave13.WaveKilled += Wave13OnKilled;
-
-
+        trigger2.Enabled = false;
     }
+    //------Triggers-------
 
+
+    //------Wave-------
     void Wave1HaveTwoAliveEnemy(Wave wave)
     {
         Debug.Log("doors open");
@@ -335,6 +340,12 @@ public class MissionExampleLogic : MissionBaseLogic
         currentWave2.WaveKilled += Wave2OnKilled;
     }
 
+    void Wave1OnKilled(Wave wave)
+    {
+        wave1isKilled = true;
+        Debug.Log("wave1 killed");
+    }
+
     void Wave2HaveTwoAliveEnemy(Wave wave)
     {
         door2_1.SetActive(false);
@@ -344,9 +355,22 @@ public class MissionExampleLogic : MissionBaseLogic
         currentWave3.WaveHaveTwoAliveEnemy += Wave3HaveTwoAliveEnemy;
         currentWave3.WaveKilled += Wave3OnKilled;
     }
+
+    void Wave2OnKilled(Wave wave)
+    {
+        wave2isKilled = true;
+        Debug.Log("wave2 killed");
+    }
+
     void Wave3HaveTwoAliveEnemy(Wave wave)
     {
         Debug.Log("Кноку можно будет нажать после полной зачистки местности");
+    }
+
+    void Wave3OnKilled(Wave wave)
+    {
+        wave3isKilled = true;
+        Debug.Log("wave3 killed");
     }
 
     void Wave4HaveTwoAliveEnemy(Wave wave)
@@ -354,6 +378,13 @@ public class MissionExampleLogic : MissionBaseLogic
         var currentWave5 = SpawnSquadWave(wave5);
         currentWave5.WaveHaveTwoAliveEnemy += Wave5HaveTwoAliveEnemy;
         currentWave5.WaveKilled += Wave5OnKilled;
+    }
+
+    void Wave4OnKilled(Wave wave)
+    {
+        wave4isKilled = true;
+        CarDestroy(Car1);
+        Debug.Log("wave4 killed");
     }
 
     void Wave5HaveTwoAliveEnemy(Wave wave)
@@ -364,20 +395,46 @@ public class MissionExampleLogic : MissionBaseLogic
         Car2 = Controller.SpawnObject("Car", "CarPoint2");
     }
 
+    void Wave5OnKilled(Wave wave)
+    {
+        wave5isKilled = true;
+        Debug.Log("wave5 killed");
+    }
+
     void Wave6HaveTwoAliveEnemy(Wave wave)
     {
         Debug.Log("Кноку можно будет нажать после полной зачистки местности");
+    }
+
+    void Wave6OnKilled(Wave wave)
+    {
+        wave6isKilled = true;
+        CarDestroy(Car2);
+        Debug.Log("wave6 killed");
     }
 
     void Wave7HaveTwoAliveEnemy(Wave wave)
     {
         Debug.Log("Осторожно! Снайперы, ликведируйте их!");
     }
+
+    void Wave7OnKilled(Wave wave)
+    {
+        wave7isKilled = true;
+        Debug.Log("wave7 killed");
+    }
+
     void Wave8HaveTwoAliveEnemy(Wave wave)
     {
         var currentWave9 = SpawnSquadWave(wave9);
         currentWave9.WaveHaveTwoAliveEnemy += Wave9HaveTwoAliveEnemy;
         currentWave9.WaveKilled += Wave9OnKilled;
+    }
+
+    void Wave8OnKilled(Wave wave)
+    {
+        wave8isKilled = true;
+        Debug.Log("wave8 killed");
     }
 
     void Wave9HaveTwoAliveEnemy(Wave wave)
@@ -387,10 +444,23 @@ public class MissionExampleLogic : MissionBaseLogic
         currentWave10.WaveKilled += Wave10OnKilled;
     }
 
+    void Wave9OnKilled(Wave wave)
+    {
+        wave9isKilled = true;
+        Debug.Log("wave9 killed");
+    }
+
     void Wave10HaveTwoAliveEnemy(Wave wave)
     {
         Debug.Log("Необходимо зачистить местность перед выходом из здания");
     }
+
+    void Wave10OnKilled(Wave wave)
+    {
+        wave10isKilled = true;
+        Debug.Log("wave10 killed");
+    }
+
     void Wave11HaveTwoAliveEnemy(Wave wave)
     {
         var currentWave12 = SpawnSquadWave(wave12);
@@ -398,10 +468,22 @@ public class MissionExampleLogic : MissionBaseLogic
         currentWave12.WaveKilled += Wave12OnKilled;
     }
 
+    void Wave11OnKilled(Wave wave)
+    {
+        wave11isKilled = true;
+        Debug.Log("wave11 killed");
+    }
+
     void Wave12HaveTwoAliveEnemy(Wave wave)
     {
         trigger2.Enabled = true;
         Debug.Log("Двигайтесь к зоне эвакуации!");
+    }
+
+    void Wave12OnKilled(Wave wave)
+    {
+        wave12isKilled = true;
+        Debug.Log("wave12 killed");
     }
 
     void Wave13HaveTwoAliveEnemy(Wave wave)
@@ -415,80 +497,7 @@ public class MissionExampleLogic : MissionBaseLogic
         wave13isKilled = true;
         Debug.Log("wave12 killed");
     }
-
-    void Wave12OnKilled(Wave wave)
-    {
-        wave12isKilled = true;
-        Debug.Log("wave12 killed");
-    }
-
-    void Wave11OnKilled(Wave wave)
-    {
-        wave11isKilled = true;
-        Debug.Log("wave11 killed");
-    }
-
-    void Wave10OnKilled(Wave wave)
-    {
-        wave10isKilled = true;
-        Debug.Log("wave10 killed");
-    }
-
-    void Wave9OnKilled(Wave wave)
-    {
-        wave9isKilled = true;
-        Debug.Log("wave9 killed");
-    }
-
-    void Wave8OnKilled(Wave wave)
-    {
-        wave8isKilled = true;
-        Debug.Log("wave8 killed");
-    }
-
-    void Wave7OnKilled(Wave wave)
-    {
-        wave7isKilled = true;
-        Debug.Log("wave7 killed");
-    }
-
-    void Wave6OnKilled(Wave wave)
-    {
-        wave6isKilled = true;
-        CarDestroy(Car2);
-        Debug.Log("wave6 killed");
-    }
-
-    void Wave5OnKilled(Wave wave)
-    {
-        wave5isKilled = true;
-        Debug.Log("wave5 killed");
-    }
-
-    void Wave4OnKilled(Wave wave)
-    {
-        wave4isKilled = true;
-        CarDestroy(Car1);
-        Debug.Log("wave4 killed");
-    }
-
-    void Wave3OnKilled(Wave wave)
-    {
-        wave3isKilled = true;
-        Debug.Log("wave3 killed");
-    }
-
-    void Wave2OnKilled(Wave wave)
-    {
-        wave2isKilled = true;
-        Debug.Log("wave2 killed");
-    }
-
-    void Wave1OnKilled(Wave wave)
-    {
-        wave1isKilled = true;
-        Debug.Log("wave1 killed");
-    }
+    //------Wave-------
 
     Wave SpawnSquadWave(List<SetupForEnemyRespawn> setupForEnemyRespawns)
     {
@@ -501,11 +510,6 @@ public class MissionExampleLogic : MissionBaseLogic
         }
         return new Wave(squadList);
     }
-
-
-    //Создал метод для удобного создания своих отрядов. Переопределил его ради гибкости использования. Присутствует повторение кода, но на мой взгляд это меньшее из зол.
-
-    
 }
 
 public class SetupForEnemyRespawn
@@ -554,21 +558,3 @@ public class Wave
         }
     }
 }
-
-//example
-/*Controller.SpawnSquad("Soldier", 1, 2, "Covers/cover2");
-Controller.SpawnSquad("Soldier", 1, 2, "Covers/cover1", "Covers/cover3");*/
-
-/*Car1 = Controller.SpawnObject("Car", new Vector3(-14.72f, 0.7f, -22.376f));
-Car1 = Controller.SpawnObject("Car", "CarPoint");*/
-
-
-//----------- evacuation logic -------------
-/*var missionTimer = Controller.CreateTimer();
-    missionTimer.TimerFinish += MissionTimeFinished; // функция лежит в MissionBaseLogic
-    missionTimer.Start(50f);*/
-
-/*var timer = Controller.CreateTimer();
-timer.TimerFinish += OnBossTimeEnded;
-timer.Start(8f);*/
-//----------- evacuation logic -------------
