@@ -9,6 +9,17 @@ public class MissionExampleLogic : MissionBaseLogic
 {
 
     public object Car1;
+    public GameObject door1;
+    public GameObject door2;
+    public GameObject door2_1;
+    public GameObject door2_2;
+
+    public bool wave1isKilled = false;
+    public bool wave2isKilled = false;
+    public bool wave3isKilled = false;
+
+    public Button button1;
+
 
     public MissionExampleLogic(BaseController controller): base(controller)
     {
@@ -17,15 +28,16 @@ public class MissionExampleLogic : MissionBaseLogic
 
     public override void Init()
     {
-        var button1 = Controller.GetButton("Button1");
+        door1 = GameObject.Find("Door1");
+        door2 = GameObject.Find("Door2");
+        door2_1 = GameObject.Find("Door2-1");
+        door2_2 = GameObject.Find("Door2-2");
+        button1 = Controller.GetButton("Button1");
         button1.Pressed += Button1OnPressed;
         var trigger = Controller.GetTrigger("Trigger1");
         trigger.Enabled = true;
         trigger.Entered += OnTrigger1Enter;
-
-        
-
-
+        button1.enabled = true;
     }
 
     
@@ -43,108 +55,128 @@ public class MissionExampleLogic : MissionBaseLogic
     
     void Button1OnPressed()
     {
-        
+        if (wave1isKilled && wave2isKilled && wave3isKilled)
+        {
+            Debug.Log("Первая цель выполнена, двигаемся дальше");
+        } else
+        {
+            Debug.Log("Не выполнены условия нажатия кнопки");
+        }
     }
 
     void OnTrigger1Enter ()
     {
-        var squad1 = CreateAndSpawnSquad(
-                                 "Gunner",
-                                 "Gunner",
-                                 "Soldier",
-                                 "Soldier",
-                                 "Soldier",
-                                 "Sniper",
-                                    "cover1",
-                                    "cover2",
-                                    "cover3",
-                                    "cover4",
-                                    "cover5",
-                                    "cover6"
-                                 );
+        var wave1 = SpawnSquadWave("Sniper", "Sniper", "Sniper", "Sniper", "Sniper", "Sniper",
+            "cover1", "cover2", "cover3", "cover4", "cover5", "cover6");
         Controller.GetTrigger("Trigger1").Enabled = false;
-        squad1.AllSquadDead += OnSquad1Dead;
+        wave1.WaveHaveTwoAliveEnemy += Wave1HaveTwoAliveEnemy;
+        wave1.WaveKilled += Wave1OnKilled;
     }
 
-    void OnSquad1Dead(Squad squad)
+    void Wave1HaveTwoAliveEnemy(Wave wave)
     {
-        Debug.Log("Door open");
+        Debug.Log("doors open");
+        door1.SetActive(false);
+        door2.SetActive(false);
+
+        var wave2 = SpawnSquadWave("Sniper", "Sniper", "Sniper", "Sniper", "Sniper", "Sniper",
+            "cover2-1", "cover2-2", "cover2-3", "cover2-4", "cover2-5", "cover2-6");
+        wave2.WaveHaveTwoAliveEnemy += Wave2HaveTwoAliveEnemy;
+        wave2.WaveKilled += Wave2OnKilled;
+    }
+
+    void Wave2HaveTwoAliveEnemy(Wave wave)
+    {
+        door2_1.SetActive(false);
+        door2_2.SetActive(false);
+
+        var wave3 = SpawnSquadWave("Sniper", "Sniper", "Sniper", "Sniper", "Sniper", "Sniper",
+            "cover3-1", "cover3-2", "cover3-3", "cover3-4", "cover3-5", "cover3-6");
+        wave3.WaveHaveTwoAliveEnemy += Wave3HaveTwoAliveEnemy;
+        wave3.WaveKilled += Wave3OnKilled;
+    }
+    void Wave3HaveTwoAliveEnemy(Wave wave)
+    {
+        Debug.Log("Кноку можно будет нажать после полной зачистки местности");
+    }
+
+        void Wave3OnKilled(Wave wave)
+    {
+        wave3isKilled = true;
+        Debug.Log("wave3 killed");
+    }
+
+    void Wave2OnKilled(Wave wave)
+    {
+        wave2isKilled = true;
+        Debug.Log("wave2 killed");
+    }
+
+    void Wave1OnKilled(Wave wave)
+    {
+        wave1isKilled = true;
+        Debug.Log("wave1 killed");
+    }
+
+    Wave SpawnSquadWave(string type1, string type2, string type3, string type4, string type5, string type6,
+        string cover1, string cover2, string cover3, string cover4, string cover5, string cover6)
+    {
+        var squad1 = Controller.SpawnSquad(type1, 1, 1, cover1);
+        var squad2 = Controller.SpawnSquad(type2, 1, 1, cover2);
+        var squad3 = Controller.SpawnSquad(type3, 1, 1, cover3);
+        var squad4 = Controller.SpawnSquad(type4, 1, 1, cover4);
+        var squad5 = Controller.SpawnSquad(type5, 1, 1, cover5);
+        var squad6 = Controller.SpawnSquad(type6, 1, 1, cover6);
+        List<Squad> squadList = new List<Squad>() { squad1, squad2, squad3, squad4, squad5, squad6 };
+        return new Wave(squadList);
     }
 
 
     //Создал метод для удобного создания своих отрядов. Переопределил его ради гибкости использования. Присутствует повторение кода, но на мой взгляд это меньшее из зол.
 
-    Squad CreateAndSpawnSquad(string enemyType1, string enemyType2, string enemyType3, string enemyType4,
-        string cover1, string cover2, string cover3, string cover4)
-    {
-        Squad squad1 = Controller.SpawnSquad(enemyType1, 1, 0, cover1);
-        try
-        {
-            squad1.Bots.AddRange(Controller.SpawnSquad(enemyType2, 1, 0, cover3).Bots);
-            squad1.Bots.AddRange(Controller.SpawnSquad(enemyType3, 1, 0, cover3).Bots);
-            squad1.Bots.AddRange(Controller.SpawnSquad(enemyType4, 1, 0, cover4).Bots);
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Не критичная ошибка: " + e);
-        }
-
-        Debug.Log(squad1.Bots);
-        return squad1;
-    }
-
-        Squad CreateAndSpawnSquad(string enemyType1, string enemyType2, string enemyType3, string enemyType4, string enemyType5,
-        string cover1, string cover2, string cover3, string cover4, string cover5)
-    {
-        Squad squad1 = Controller.SpawnSquad(enemyType1, 1, 0, cover1);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType2, 1, 0, cover2).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType3, 1, 0, cover3).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType4, 1, 0, cover4).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType5, 1, 0, cover5).Bots);
-        return squad1;
-    }
-
-    Squad CreateAndSpawnSquad(string enemyType1, string enemyType2, string enemyType3, string enemyType4, string enemyType5, string enemyType6,
-        string cover1, string cover2, string cover3, string cover4, string cover5, string cover6)
-    {
-        Squad squad1 = Controller.SpawnSquad(enemyType1, 1, 0, cover1);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType2, 1, 0, cover2).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType3, 1, 0, cover3).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType4, 1, 0, cover4).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType5, 1, 0, cover5).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType6, 1, 0, cover6).Bots);
-        return squad1;
-    }
-
-    Squad CreateAndSpawnSquad(string enemyType1, string enemyType2, string enemyType3, string enemyType4, string enemyType5, string enemyType6, string enemyType7,
-        string cover1, string cover2, string cover3, string cover4, string cover5, string cover6, string cover7)
-    {
-        Squad squad1 = Controller.SpawnSquad(enemyType1, 1, 0, cover1);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType2, 1, 0, cover2).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType3, 1, 0, cover3).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType4, 1, 0, cover4).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType5, 1, 0, cover5).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType6, 1, 0, cover6).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType7, 1, 0, cover7).Bots);
-        return squad1;
-    }
-
-    Squad CreateAndSpawnSquad(string enemyType1, string enemyType2, string enemyType3, string enemyType4, string enemyType5, string enemyType6, string enemyType7, string enemyType8,
-        string cover1, string cover2, string cover3, string cover4, string cover5, string cover6, string cover7, string cover8)
-    {
-        Squad squad1 = new Squad(enemyType1, 1, 0, cover1);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType2, 1, 0, cover2).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType3, 1, 0, cover3).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType4, 1, 0, cover4).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType5, 1, 0, cover5).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType6, 1, 0, cover6).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType7, 1, 0, cover7).Bots);
-        squad1.Bots.AddRange(Controller.SpawnSquad(enemyType8, 1, 0, cover8).Bots);
-        return squad1;
-    }
+    
 }
 
+public class SetupForEnemyRespawn
+{
+    public string type;
+    public string cover;
+}
 
+public class Wave
+{
+    List<Squad> squadList = new List<Squad>();
+    public Action<Wave> WaveKilled;
+    public Action<Wave> WaveHaveTwoAliveEnemy;
+
+    public Wave (List<Squad> squads)
+    {
+        squadList.AddRange(squads);
+
+        foreach (Squad squad in squadList)
+        {
+            squad.AllSquadDead += DeleteSquad;
+        }
+    }
+
+    public void DeleteSquad(Squad squad)
+    {
+        if (squadList.Contains(squad))
+        {
+            squadList.Remove(squad);
+        }
+
+        if (squadList.Count == 2)
+        {
+            WaveHaveTwoAliveEnemy.Invoke(this);
+        }
+
+        if (squadList.Count == 0)
+        {
+            WaveKilled.Invoke(this);
+        }
+    }
+}
 
 //example
 /*Controller.SpawnSquad("Soldier", 1, 2, "Covers/cover2");
