@@ -20,6 +20,9 @@ public class MissionExampleLogic : MissionBaseLogic
 
     public Button button1;
 
+    private List<SetupForEnemyRespawn> wave1;
+    private List<SetupForEnemyRespawn> wave2;
+    private List<SetupForEnemyRespawn> wave3;
 
     public MissionExampleLogic(BaseController controller): base(controller)
     {
@@ -28,6 +31,7 @@ public class MissionExampleLogic : MissionBaseLogic
 
     public override void Init()
     {
+        GenerateWaves();
         door1 = GameObject.Find("Door1");
         door2 = GameObject.Find("Door2");
         door2_1 = GameObject.Find("Door2-1");
@@ -38,6 +42,36 @@ public class MissionExampleLogic : MissionBaseLogic
         trigger.Enabled = true;
         trigger.Entered += OnTrigger1Enter;
         button1.enabled = true;
+    }
+
+    void GenerateWaves()
+    {
+        wave1 = new List<SetupForEnemyRespawn>()
+        {
+            new SetupForEnemyRespawn("Gunner", "cover1"),
+            new SetupForEnemyRespawn("Gunner", "cover2"),
+            new SetupForEnemyRespawn("Soldier", "cover3"),
+            new SetupForEnemyRespawn("Soldier", "cover4"),
+            new SetupForEnemyRespawn("Soldier", "cover5"),
+            new SetupForEnemyRespawn("Sniper", "cover6"),
+        };
+
+        wave2 = new List<SetupForEnemyRespawn>()
+        {
+            new SetupForEnemyRespawn("Gunner", "cover2-1"),
+            new SetupForEnemyRespawn("Gunner", "cover2-2"),
+            new SetupForEnemyRespawn("Soldier", "cover2-3"),
+            new SetupForEnemyRespawn("Soldier", "cover2-4"),
+            new SetupForEnemyRespawn("Soldier", "cover2-5"),
+            new SetupForEnemyRespawn("Sniper", "cover2-6"),
+        };
+        wave3 = new List<SetupForEnemyRespawn>()
+        {
+            new SetupForEnemyRespawn("Gunner", "cover3-1"),
+            new SetupForEnemyRespawn("Gunner", "cover3-2"),
+            new SetupForEnemyRespawn("Soldier", "cover3-3"),
+            new SetupForEnemyRespawn("Sniper", "cover3-6"),
+        };
     }
 
     
@@ -66,11 +100,10 @@ public class MissionExampleLogic : MissionBaseLogic
 
     void OnTrigger1Enter ()
     {
-        var wave1 = SpawnSquadWave("Sniper", "Sniper", "Sniper", "Sniper", "Sniper", "Sniper",
-            "cover1", "cover2", "cover3", "cover4", "cover5", "cover6");
+        var currentWave1 = SpawnSquadWave(wave1);
         Controller.GetTrigger("Trigger1").Enabled = false;
-        wave1.WaveHaveTwoAliveEnemy += Wave1HaveTwoAliveEnemy;
-        wave1.WaveKilled += Wave1OnKilled;
+        currentWave1.WaveHaveTwoAliveEnemy += Wave1HaveTwoAliveEnemy;
+        currentWave1.WaveKilled += Wave1OnKilled;
     }
 
     void Wave1HaveTwoAliveEnemy(Wave wave)
@@ -79,10 +112,9 @@ public class MissionExampleLogic : MissionBaseLogic
         door1.SetActive(false);
         door2.SetActive(false);
 
-        var wave2 = SpawnSquadWave("Sniper", "Sniper", "Sniper", "Sniper", "Sniper", "Sniper",
-            "cover2-1", "cover2-2", "cover2-3", "cover2-4", "cover2-5", "cover2-6");
-        wave2.WaveHaveTwoAliveEnemy += Wave2HaveTwoAliveEnemy;
-        wave2.WaveKilled += Wave2OnKilled;
+        var currentWave2 = SpawnSquadWave(wave2);
+        currentWave2.WaveHaveTwoAliveEnemy += Wave2HaveTwoAliveEnemy;
+        currentWave2.WaveKilled += Wave2OnKilled;
     }
 
     void Wave2HaveTwoAliveEnemy(Wave wave)
@@ -90,10 +122,9 @@ public class MissionExampleLogic : MissionBaseLogic
         door2_1.SetActive(false);
         door2_2.SetActive(false);
 
-        var wave3 = SpawnSquadWave("Sniper", "Sniper", "Sniper", "Sniper", "Sniper", "Sniper",
-            "cover3-1", "cover3-2", "cover3-3", "cover3-4", "cover3-5", "cover3-6");
-        wave3.WaveHaveTwoAliveEnemy += Wave3HaveTwoAliveEnemy;
-        wave3.WaveKilled += Wave3OnKilled;
+        var currentWave3 = SpawnSquadWave(wave3);
+        currentWave3.WaveHaveTwoAliveEnemy += Wave3HaveTwoAliveEnemy;
+        currentWave3.WaveKilled += Wave3OnKilled;
     }
     void Wave3HaveTwoAliveEnemy(Wave wave)
     {
@@ -118,16 +149,15 @@ public class MissionExampleLogic : MissionBaseLogic
         Debug.Log("wave1 killed");
     }
 
-    Wave SpawnSquadWave(string type1, string type2, string type3, string type4, string type5, string type6,
-        string cover1, string cover2, string cover3, string cover4, string cover5, string cover6)
+    Wave SpawnSquadWave(List<SetupForEnemyRespawn> setupForEnemyRespawns)
     {
-        var squad1 = Controller.SpawnSquad(type1, 1, 1, cover1);
-        var squad2 = Controller.SpawnSquad(type2, 1, 1, cover2);
-        var squad3 = Controller.SpawnSquad(type3, 1, 1, cover3);
-        var squad4 = Controller.SpawnSquad(type4, 1, 1, cover4);
-        var squad5 = Controller.SpawnSquad(type5, 1, 1, cover5);
-        var squad6 = Controller.SpawnSquad(type6, 1, 1, cover6);
-        List<Squad> squadList = new List<Squad>() { squad1, squad2, squad3, squad4, squad5, squad6 };
+        List<Squad> squadList = new List<Squad>() { };
+
+        foreach (SetupForEnemyRespawn setup in setupForEnemyRespawns)
+        {
+            var squad = Controller.SpawnSquad(setup.type, 1, 1, setup.cover);
+            squadList.Add(squad);
+        }
         return new Wave(squadList);
     }
 
@@ -141,6 +171,12 @@ public class SetupForEnemyRespawn
 {
     public string type;
     public string cover;
+
+    public SetupForEnemyRespawn (string type, string cover)
+    {
+        this.type = type;
+        this.cover = cover;
+    }
 }
 
 public class Wave
